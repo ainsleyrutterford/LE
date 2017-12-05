@@ -1,3 +1,4 @@
+import Prelude hiding (Maybe, Just, Nothing)
 import Control.Applicative
 
 ---------------
@@ -883,3 +884,41 @@ instance Monad Identity where
 -- (\x -> f x >>= g) x
 -- = { application }
 -- (f x) >>= g
+
+-- Exceptions / Failures
+
+-- We can model failure by an operation called fail, which interacts with other
+-- monadic operations.
+
+-- class Monad m => MonadFail m where
+--   fail :: m a
+
+-- This has one law associated to it:
+
+-- left-fail: fail >>= f = fail
+
+-- An example of a monad that satisfies this is the Maybe monad.
+
+-- This is not part of the lecture notes, we just need this to compile...
+data Maybe a = Just a
+             | Nothing
+
+instance Applicative Maybe where
+  -- pure :: a -> Maybe a
+  pure x = Just x
+  -- (<*>) :: Maybe (a -> b) -> Maybe a -> Maybe b
+  Nothing <*> mx = Nothing
+  mx <*> Nothing = Nothing
+  Just f <*> Just x = Just (f x)
+
+instance Functor Maybe where
+  fmap f Nothing = Nothing
+  fmap f (Just x) = Just (f x)
+-- Lecture notes continue...
+
+instance Monad Maybe where
+  -- return :: a -> Maybe a
+  return x = Just x
+  -- (>>=) :: Maybe a -> (a -> Maybe b) -> Maybe b
+  Nothing >>= f = Nothing
+  Just x >>= f = f x
