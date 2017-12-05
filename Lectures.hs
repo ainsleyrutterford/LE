@@ -804,3 +804,47 @@ eof :: Parser ()
 eof = Parser (\ts -> case ts of
   [] -> [(ts, ())]
   _  -> [])
+
+----------------
+-- LECTURE 14 --
+----------------
+
+-- Monads encapsulate the notion of sequential operations. The bind operation,
+-- (>>=) is a kind of (;) from the imperative world.
+
+-- A monad can be modelled by the following functions.
+
+-- class Monad m where
+--   return :: a -> m a
+--   (>>=) :: m a -> (a -> m b) -> m b
+
+-- These operations must satisgy the these laws:
+-- 1. left return: return x >>= f = f x
+-- 2. right return: mx >>= return = mx
+-- 3. associativity: (mx >>= f) >>= g = mx >>= (\x -> f x >>= g)
+
+-- Identity Monad
+
+-- The simplest monad is the identity monad. It captures the idea that function
+-- application is sequential.
+
+newtype Identity a = Id a
+
+-- This is not part of the lecture notes, we just need this to compile...
+instance Applicative Identity where
+  -- pure :: a -> Identity a
+  pure x = Id x
+  -- (<*>) :: Identity (a -> b) -> Identity a -> Identity b
+  Id f <*> Id x = Id (f x)
+
+instance Functor Identity where
+  fmap f (Id x) = Id (f x)
+-- Lecture notes continue...
+
+-- First, we provide the instance for this monad:
+
+instance Monad Identity where
+  -- return :: a -> Identity a
+  return x = Id x
+  -- (>>=) :: Identity a -> (a -> Identity b) -> Identity b
+  Id x >>= f = f x
