@@ -848,3 +848,38 @@ instance Monad Identity where
   return x = Id x
   -- (>>=) :: Identity a -> (a -> Identity b) -> Identity b
   Id x >>= f = f x
+
+-- Now we must prove the three monad laws:
+
+-- 1. return x >>= f = f x
+-- return x >>= f
+-- = { return }
+-- Id x >>= f
+-- = { (>>=) }
+-- f x
+
+-- 2. mx >>= return = mx
+-- mx >>= return
+-- = { let mx = Id x }
+-- Id x >>= return
+-- = { (>>=) }
+-- return x
+-- = { return }
+-- Id x
+-- = { asuumption }
+-- mx
+
+-- 3. (mx >>= f) >>= g = mx >>= (\x -> f x >>= g)
+-- (mx >>= f) >>= g
+-- = { let mx = Id x}
+-- (Id x >>= f) >>= g
+-- = { (>>=) }
+-- (f x) >>= g
+--
+-- mx >>= (\x -> f x >>= g)
+-- = { let mx = Id x }
+-- Id x >>= (\x -> f x >>= g)
+-- = { (>>=) }
+-- (\x -> f x >>= g) x
+-- = { application }
+-- (f x) >>= g
