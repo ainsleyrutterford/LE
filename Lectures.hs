@@ -922,3 +922,36 @@ instance Monad Maybe where
   -- (>>=) :: Maybe a -> (a -> Maybe b) -> Maybe b
   Nothing >>= f = Nothing
   Just x >>= f = f x
+
+-- We would need to prove the monad laws.
+
+-- We can also show that Maybe is a MonadFail.
+
+instance MonadFail Maybe where
+  -- fail :: Maybe a
+  fail = Nothing
+
+-- The left-fail law is immediate from the definition of (>>=)
+
+-- Alternatives
+
+-- Alternatices are given by the following interface:
+
+-- class Monad m => Monad Nondet m where
+  -- box :: m a -> m a -> m a
+
+-- This satisfies two laws:
+
+-- box-assoc. (p `box` q) `box` r = p `box` (q `box` r)
+-- box-distr. (p `box` q) >>= f = (p >>= f) `box` (q >>= f)
+
+-- The list monad is an instance of both MonadFail and MonadNondet.
+
+instance Monad [] where
+  -- return :: a -> [a]
+  return x = [x]
+  -- (>>=) :: [a] -> (a -> [b] -> [b])
+
+-- Lists have failure and nondeterminism, but let's define bind.
+
+-- xs >>= f = concat (map f xs)
