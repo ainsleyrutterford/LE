@@ -890,8 +890,8 @@ instance Monad Identity where
 -- We can model failure by an operation called fail, which interacts with other
 -- monadic operations.
 
--- class Monad m => MonadFail m where
---   fail :: m a
+class Monad m => MonadFail m where
+  fail :: m a
 
 -- This has one law associated to it:
 
@@ -935,10 +935,10 @@ instance MonadFail Maybe where
 
 -- Alternatives
 
--- Alternatices are given by the following interface:
+-- Alternatives are given by the following interface:
 
--- class Monad m => Monad Nondet m where
-  -- box :: m a -> m a -> m a
+class Monad m => MonadNondet m where
+  box :: m a -> m a -> m a
 
 -- This satisfies two laws:
 
@@ -947,11 +947,60 @@ instance MonadFail Maybe where
 
 -- The list monad is an instance of both MonadFail and MonadNondet.
 
-instance Monad [] where
+-- instance Monad [] where
   -- return :: a -> [a]
-  return x = [x]
+  -- return x = [x]
   -- (>>=) :: [a] -> (a -> [b] -> [b])
+
+----------------
+-- LECTURE 15 --
+----------------
 
 -- Lists have failure and nondeterminism, but let's define bind.
 
 -- xs >>= f = concat (map f xs)
+
+-- The instance for MonadFail is:
+
+instance MonadFail [] where
+  -- fail :: [a]
+  fail = []
+
+-- Lists are also the canonical example of MonadNondet:
+
+instance MonadNondet [] where
+  -- box :: [a] -> [a] -> [a]
+  xs `box` ys = xs ++ ys
+
+-- State
+
+-- Stateful computations involve some combinations of put and get operations.
+-- The operation 'put' places a value into the state, and 'get' fetches a
+-- value from the state.
+
+-- The 'get' and 'put' operations are encoded in the following class:
+
+-- class Monad m => MonadState s m where
+--   put :: s -> m ()
+--   get :: m s
+--   (>>) :: Monad m => m a -> m b -> m b
+--   xs >> ys = xs >>= \_ -> ys
+
+-- These operations satisfy 4 laws:
+-- put-put: put s >> put s' = put s'
+-- put-get: put s >> get = put s >> return s
+-- get-put: get >>= put = return ()
+-- get-get: get >>= (\s -> get >>= k s) = get >>= \s -> k s s
+
+-- A stateful computation can be modelled by the following type:
+-- s -> (s, a)
+-- old state -> (new state, computational result)
+
+-- The s represents all the variables in the state.
+
+newtype State s a = State (s -> (s,a))
+
+-- We provide the deconstructor:
+
+runState :: State s a -> (s -> (s, a))
+runState (State p) = p

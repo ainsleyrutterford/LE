@@ -16,6 +16,10 @@ instance Monad Maybe where
   (Just x)  >>= f = f x
   (Nothing) >>= f = Nothing
 
+instance Functor Maybe where
+  fmap f (Nothing) = Nothing
+  fmap f (Just a) = Just (f a)
+
 instance Applicative Maybe where
   -- pure :: a -> Maybe a
   pure x = Just x
@@ -140,6 +144,7 @@ addToTree x y = Leaf (x + y)
 manipTree :: Tree Int -> Tree Int
 manipTree t = t >>= f where
   f x = Leaf (((x + 3) * 2) + 2)
+-- manipTree t = t >>= (addToTree 3) >>= intToDoubleTree >>= (addToTree 2)
 
 -- 6.
 dupToTree :: a -> Tree a
@@ -147,11 +152,13 @@ dupToTree a = Fork (Leaf a) (Leaf a)
 
 -- 7.
 duplicateTree :: Tree Int -> Tree Int
+-- duplicateTree t = t >>= dupToTree
 duplicateTree t = t >>= f where
   f x = Fork (Leaf x) (Leaf x)
 
 -- 8.
 aWholeNewTree :: Tree Int -> Tree Int
+-- aWholeNewTree t = t >>= dupToTree >>= intToDoubleTree
 aWholeNewTree = duplicateTree . f where
   f (Leaf x) = Leaf (2 * x)
   f (Fork l r) = Fork (f l) (f r)
