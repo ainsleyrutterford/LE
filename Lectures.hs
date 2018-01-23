@@ -1004,3 +1004,13 @@ newtype State s a = State (s -> (s,a))
 
 runState :: State s a -> (s -> (s, a))
 runState (State p) = p
+
+-- We must show that this is a monad:
+
+-- instance Monad (State s) where
+--   return :: a -> State s a
+--   return x = State (\s -> (s, x))
+--   (>>=) :: State s a -> (a -> State s b) -> State s b
+--   State p >>= f = State (\s -> let (s', x) = p s in runState (f x) s')
+
+-- Example: runState (return 42) 7 = (7, 42)
