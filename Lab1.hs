@@ -50,6 +50,17 @@ stick (t,w,c,d) = (t+120, w, True, "stewed " ++ d)
 mix :: (Int, Int, Bool, String) -> (Int, Int, Bool, String) -> (Int, Int, Bool, String)
 mix (a,b,c,d) (w,x,y,z) = (a+w, b+x, c && y, d ++ (" and " ++ z))
 
--- The difference between a GPL and a DSL is
 
--- What programming methods should be used in shallow embeddings
+-- What is the difference between a GPL and a DSL?
+--
+-- The difference between a GPL and a DSL is that a General Purpose Language is
+-- Turing complete, whereas a Domain Specific Language may not be.
+
+
+-- What programming methods should be used in shallow embeddings and deep
+-- embeddings when dealing with dependent interpretation?
+--
+-- Shallow: You output a tuple for the semantic output that evaluates all the
+-- functions that need to be evaluated and then use these lues as you increment
+-- through.
+-- Deep: You simply create a new semantic function and call it as needed.
