@@ -61,6 +61,6 @@ mix (a,b,c,d) (w,x,y,z) = (a+w, b+x, c && y, d ++ (" and " ++ z))
 -- embeddings when dealing with dependent interpretation?
 --
 -- Shallow: You output a tuple for the semantic output that evaluates all the
--- functions that need to be evaluated and then use these lues as you increment
--- through.
+-- functions that need to be evaluated and then use these values as you
+-- increment through.
 -- Deep: You simply create a new semantic function and call it as needed.
