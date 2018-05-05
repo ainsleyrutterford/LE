@@ -143,7 +143,7 @@ beside'' (b1,w1) (b2,w2) = (b1 && b2, w1 + w2)
 
 -- And so on...
 -- The point here is that we might need to combine information. Doing so
--- involves extending our domain and the definitios everywhere. This is a pain.
+-- involves extending our domain and the definitions everywhere. This is a pain.
 
 ---------------
 -- LECTURE 3 --
@@ -342,7 +342,7 @@ data Nat = Z | S Nat
 -- Zero ~= zero
 -- S ~= successor
 
--- Example: tp represent 3, we have S (S (S Z))
+-- Example: to represent 3, we have S (S (S Z))
 
 -- The first step is to write the "patern functor" for Nat.
 -- This is:
