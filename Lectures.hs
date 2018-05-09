@@ -491,7 +491,7 @@ algAdd (Add' x y) = x + y
 -- <term> ::= ('0' | '1' | ... | '9')+
 
 -- This language consists of terminals eg. "+" or '0' or '5' and
--- non-terminals in anled brackets eg. <expr> or <term>
+-- non-terminals in angled brackets eg. <expr> or <term>
 
 -- BNF consists of:
 
@@ -687,7 +687,7 @@ f <|$|> x = fmap f x
 -- Sometimes, we want to parse, but not use the function because it is a
 -- constant.
 
--- I've used <|$ becayse <$ is already defined.
+-- I've used <|$ because <$ is already defined.
 (<|$) :: Functor f => a -> f b -> f a
 (<|$) = fmap . const
 

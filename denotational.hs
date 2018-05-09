@@ -22,6 +22,13 @@ data Bexp = TRUE
           | Le Aexp Aexp
           deriving (Show, Eq, Read)
 
+data Stm = Ass Var Aexp
+         | Skip
+         | Comp Stm Stm
+         | If Bexp Stm Stm
+         | While Bexp Stm
+         deriving (Show, Eq, Read)
+
 n_val :: Num -> Z
 n_val x = x
 
