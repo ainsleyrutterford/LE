@@ -37,7 +37,7 @@ tok s = string s <* whitespace
 
 -- 4.
 number :: Parser Int
-number = (fmap read (some (oneOf ['0' .. '9']))) <* whitespace
+number = read <$> (some (oneOf ['0' .. '9'])) <* whitespace
 -- This is the same as:
 -- number = (some (oneOf ['0' .. '9']) >>= return . read) <* whitespace
 
@@ -71,6 +71,7 @@ whitespace = many (oneOf ",;\r\n\t ") *> pure ()
 data DataB = A Int DataB' | B DataB'
 
 data DataB' = B' Int DataB' | D
+
 parseBad :: Parser DataB
 parseBad = A <$ tok "a" <*> number <*> parseBad'
        <|> B <$> parseBad'

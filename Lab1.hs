@@ -4,6 +4,7 @@ data Robot = Forward Int Robot
            | Right' Robot
            | Left' Robot
            | Stop
+           deriving Show
 
 distTrav :: Robot -> Int
 distTrav Stop = 0
