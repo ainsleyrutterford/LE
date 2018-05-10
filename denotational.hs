@@ -1,34 +1,7 @@
 import Prelude hiding (Num)
 import qualified Prelude (Num)
 import While
-
-type Num = Integer
-type Var = String
-type Z = Integer
-type T = Bool
-type State = Var -> Z
-
-data Aexp = N Num
-          | V Var
-          | Mult Aexp Aexp
-          | Add Aexp Aexp
-          | Sub Aexp Aexp
-          deriving (Show, Eq, Read)
-
-data Bexp = TRUE
-          | FALSE
-          | Neg Bexp
-          | And Bexp Bexp
-          | Eq Aexp Aexp
-          | Le Aexp Aexp
-          deriving (Show, Eq, Read)
-
-data Stm = Ass Var Aexp
-         | Skip
-         | Comp Stm Stm
-         | If Bexp Stm Stm
-         | While Bexp Stm
-         deriving (Show, Eq, Read)
+import Yoda
 
 n_val :: Num -> Z
 n_val x = x
@@ -59,3 +32,6 @@ b_val (Neg b) s = not (b_val b s)
 b_val (And x y) s = (b_val x s) && (b_val y s)
 b_val (Eq x y) s = (a_val x s) == (a_val y s)
 b_val (Le x y) s = (a_val x s) <= (a_val y s)
+
+p :: Stm
+p = fromJust (parseMaybe while "y:=1; while !(x=1) do y:=y*x; x:=x-1")

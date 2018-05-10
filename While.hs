@@ -2,34 +2,36 @@ module While where
 
 import Yoda
 import Data.List
+import Prelude hiding (Num)
+import qualified Prelude (Num)
 
-
-data Aexp
-  = Num Int
-  | Var Var
-  | Aexp :+: Aexp
-  | Aexp :*: Aexp
-  | Aexp :-: Aexp
-  deriving Show
-
-data Bexp
-  = T
-  | F
-  | Aexp :=: Aexp
-  | Aexp :<=: Aexp
-  | Bexp :&&: Bexp
-  | Not Bexp
-  deriving Show
-
+type Num = Integer
 type Var = String
+type Z = Integer
+type T = Bool
+type State = Var -> Z
 
-data Stm
-  = Var := Aexp
-  | Skip
-  | Stm :> Stm
-  | If Bexp Stm Stm
-  | While Bexp Stm
-  deriving Show
+data Aexp = N Num
+          | V Var
+          | Mult Aexp Aexp
+          | Add Aexp Aexp
+          | Sub Aexp Aexp
+          deriving (Show, Eq, Read)
+
+data Bexp = TRUE
+          | FALSE
+          | Neg Bexp
+          | And Bexp Bexp
+          | Eq Aexp Aexp
+          | Le Aexp Aexp
+          deriving (Show, Eq, Read)
+
+data Stm = Ass Var Aexp
+         | Skip
+         | Comp Stm Stm
+         | If Bexp Stm Stm
+         | While Bexp Stm
+         deriving (Show, Eq, Read)
 
 -- The while language is a parser of |Stm| terms. We allow multiple
 -- semi-colons at the top level.
@@ -54,25 +56,25 @@ precedence :: [Parser (a -> a -> a)] -> Parser a -> Parser a
 precedence ops arg = foldl' build arg ops
   where build term ops = chainl term ops
 
-aexp = precedence [(:*:) <$ tok "*"
-                  ,(:+:) <$ tok "+" <|> (:-:) <$ tok "-" ]
-     ( Num <$> num
-   <|> Var <$> var
+aexp = precedence [Mult <$ tok "*"
+                  ,Add <$ tok "+" <|> Sub <$ tok "-" ]
+     ( N <$> num
+   <|> V <$> var
    <|> tok "(" *> aexp <* tok ")")
 
 bexp :: Parser Bexp
-bexp = precedence [(:&&:) <$ tok "&"]
-      ( T <$ tok "true"
-    <|> F <$ tok "false"
-    <|> (:=:) <$> aexp <* tok "=" <*> aexp
-    <|> (:<=:) <$> aexp <* tok "<=" <*> aexp
-    <|> Not <$ tok "!" <*> bexp
+bexp = precedence [And <$ tok "&"]
+      ( TRUE <$ tok "true"
+    <|> FALSE <$ tok "false"
+    <|> Eq <$> aexp <* tok "=" <*> aexp
+    <|> Le <$> aexp <* tok "<=" <*> aexp
+    <|> Neg <$ tok "!" <*> bexp
     <|> tok "(" *> bexp <* tok ")")
 
 stms :: Parser Stm
-stms = chainl stm ((:>) <$ tok ";")
+stms = chainl stm (Comp <$ tok ";")
 
-stm = (:=) <$> var <* tok ":=" <*> aexp
+stm = Ass <$> var <* tok ":=" <*> aexp
   <|> Skip <$  tok "skip"
   <|> If <$ tok "if" <*> bexp <* tok "then" <*> stm <* tok "else" <*> stm
   <|> While <$ tok "while" <*> bexp <* tok "do" <*> stm
@@ -84,7 +86,7 @@ chainl p op = p >>= rest where
               rest (f x y)
        <|> return x
 
-num :: Parser Int
+num :: Parser Num
 num = read <$> some (oneOf ['0' .. '9']) <* whitespace
 
 var :: Parser String
@@ -95,6 +97,10 @@ whitespace = () <$ many (oneOf " \t\n\r")
 
 tok :: String -> Parser String
 tok t = string t <* whitespace
+
+fromJust :: Maybe a -> a
+fromJust Nothing = error "fromJust Nothing"
+fromJust (Just x) = x
 
 -- Note that there is potential ambiguity in the following example:
 example = "if true then x := 5 else z := 2 + 1 ; u := 2 * 3 + 4"
