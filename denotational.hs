@@ -35,3 +35,28 @@ b_val (Le x y) s = (a_val x s) <= (a_val y s)
 
 p :: Stm
 p = fromJust (parseMaybe while "y:=1; while !(x=1) do y:=y*x; x:=x-1")
+
+update :: State -> Z -> Var -> State
+update s i nv v
+  | nv == v   = i
+  | otherwise = s v
+
+s' :: State
+s' = update s 5 "x"
+
+cond :: (a -> T, a -> a, a -> a) -> (a -> a)
+cond (b, s1, s2) x = if b x then s1 x else s2 x
+
+fix :: ((State -> State) -> (State -> State)) -> (State -> State)
+fix ff = ff (fix ff)
+
+s_ds :: Stm -> State -> State
+s_ds (Ass v a) s = update s (a_val a s) v
+s_ds (Skip) s = id s
+s_ds (Comp s1 s2) s = s_ds s2 (s_ds s1 s)
+s_ds (If b s1 s2) s = cond (b_val b, s_ds s1, s_ds s2) s
+s_ds (While b s1) s =
+  (fix f) s where f g = cond (b_val b, g . (s_ds s1), id)
+
+result :: State
+result = s_ds p s'
