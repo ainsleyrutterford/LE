@@ -1,5 +1,6 @@
 import Prelude hiding (Num)
 import qualified Prelude (Num)
+import While
 
 type Num = Integer
 type Var = String
