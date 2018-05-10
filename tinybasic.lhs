@@ -117,7 +117,7 @@ the full parser is defined.
 > tok t = string t <* whitespace
 
 > whitespace :: Parser ()
-> whitespace = many (oneOf " \t") *> pure ()
+> whitespace = () <$ many (oneOf " \t")
 
 Now each of the production rules in the grammar will be considered and
 translated into a corresponding datatype and parser.
@@ -240,7 +240,7 @@ translated into a corresponding datatype and parser.
     digit : '0' | '1' | ... | '9'
 
 > number :: Parser Int
-> number = (some (oneOf ['0' .. '9']) >>= return . read) <* whitespace
+> number = read <$> some (oneOf ['0' .. '9']) <* whitespace
 
     rel : '<' [ '>' | '=' ] | '>' [ '<' | '=' ] | '='
 
