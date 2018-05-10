@@ -49,7 +49,7 @@ functions are defined outside of this file, namely, those marked under
 >   , pure, (<*>), (<*), (*>), (<**>)
 >
 >   -- Alternative
->   , (<|>), empty, some, many
+>   , (<|>), empty, some, many, asum
 >
 >   -- Monad
 >   , return, (>>=)
@@ -68,6 +68,7 @@ implementing for our parsers.
 
 > import Control.Monad
 > import Control.Applicative
+> import Data.Foldable
 
 
 Parser
@@ -76,7 +77,10 @@ Parser
 Our parsers will take in a `String` and produce a list of possible
 parses, along with remaining unparsed strings.
 
-> newtype Parser a = Parser { parse :: String -> [(String, a)] }
+> newtype Parser a = Parser (String -> [(String, a)])
+
+> parse :: Parser a -> (String -> [(String, a)])
+> parse (Parser p) = p
 
 > parseMaybe :: Parser a -> String -> Maybe a
 > parseMaybe px ts = case parse px ts of
@@ -157,6 +161,8 @@ Derived combinators:
 < (<**>) :: Applicative f => f a -> f (a -> b) -> f b
 < px <**> pf = (flip ($)) <$> px <*> pf
 
+> between :: Applicative m => m open -> m close -> m a -> m a
+> between popen pclose px = popen *> px <* pclose
 
 
 
@@ -183,6 +189,23 @@ Derived combinators
 < many :: Alternative f => f a -> f [a]
 < many px = some px <|> pure []
 
+< asum :: Alternative f => [f a] -> f a
+< asum = foldr (<|>) empty
+
+> choice :: Alternative f => [f a] -> f a
+> choice = asum
+
+> chainl :: Alternative f => f a -> f (a -> a -> a) -> a -> f a
+> chainl px pf x = chainl1 px pf <|> pure x
+
+> chainl1 :: Alternative f => f a -> f (a -> a -> a) -> f a
+> chainl1 px pf = foldl' (flip ($)) <$> px <*> (many (flip <$> pf <*> px))
+
+> chainr :: Alternative f => f a -> f (a -> a -> a) -> a -> f a
+> chainr px pf x = chainr1 px pf <|> pure x
+
+> chainr1 :: Alternative f => f a -> f (a -> a -> a) -> f a
+> chainr1 px pf = flip (foldr ($)) <$> (many (px <**> pf)) <*> px
 
 Monad
 =====
@@ -207,7 +230,6 @@ Or, if you prefer do notation:
 < satisfy p = do t <- item
 <                if p t then pure t
 <                       else empty
-
 
 > char :: Char -> Parser Char
 > char c = satisfy (c ==)
@@ -267,3 +289,4 @@ some nomenclature.
     <|>      or
 
     <:>      lift cons
+
