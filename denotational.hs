@@ -34,7 +34,7 @@ b_val (Eq x y) s = (a_val x s) == (a_val y s)
 b_val (Le x y) s = (a_val x s) <= (a_val y s)
 
 p :: Stm
-p = fromJust (parseMaybe while "y:=1; while !(x=1) do y:=y*x; x:=x-1")
+p = fromJust (parseMaybe while "y:=1; while !(x=1) do (y:=y*x; x:=x-1)")
 
 update :: State -> Z -> Var -> State
 update s i nv v
