@@ -1,3 +1,6 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
+
 import Prelude hiding (Maybe, Just, Nothing)
 import Control.Applicative
 
@@ -980,11 +983,11 @@ instance MonadNondet [] where
 
 -- The 'get' and 'put' operations are encoded in the following class:
 
--- class Monad m => MonadState s m where
---   put :: s -> m ()
---   get :: m s
---   (>>) :: Monad m => m a -> m b -> m b
---   xs >> ys = xs >>= \_ -> ys
+class Monad m => MonadState s m where
+  put :: s -> m ()
+  get :: m s
+  -- (>>) :: Monad m => m a -> m b -> m b
+  -- xs >> ys = xs >>= \_ -> ys
 
 -- These operations satisfy 4 laws:
 -- put-put: put s >> put s' = put s'
@@ -1005,12 +1008,46 @@ newtype State s a = State (s -> (s,a))
 runState :: State s a -> (s -> (s, a))
 runState (State p) = p
 
+-- Added the Applicative instance and Functor instance for State s so that
+-- the file would compile. Not part of lecture notes.
+instance Applicative (State s) where
+  -- pure :: a -> State s a
+  pure x = State (\s -> (s, x))
+  -- (<*>) :: State s (a -> b) -> State s a -> State s b
+  f <*> x = undefined
+
+instance Functor (State s) where
+  -- fmap :: (a -> b) -> State s a -> State s b
+  -- fmap f (State p) = State (\s -> let (s', x) = p s in (s', f x))
+  fmap f (State p) = undefined
+-- Lecture notes continue.
+
 -- We must show that this is a monad:
 
--- instance Monad (State s) where
---   return :: a -> State s a
---   return x = State (\s -> (s, x))
---   (>>=) :: State s a -> (a -> State s b) -> State s b
---   State p >>= f = State (\s -> let (s', x) = p s in runState (f x) s')
+instance Monad (State s) where
+  -- return :: a -> State s a
+  return x = State (\s -> (s, x))
+  -- (>>=) :: State s a -> (a -> State s b) -> State s b
+  State p >>= f = State (\s -> let (s', x) = p s in runState (f x) s')
 
 -- Example: runState (return 42) 7 = (7, 42)
+
+----------------
+-- LECTURE 16 --
+----------------
+
+-- The state monad we defined gives an instance of MonadState. We have the
+-- following:
+
+instance MonadState s (State s) where
+  -- put :: s -> State s ()
+  put s' = State (\s -> (s',()))
+  -- get :: State s s
+  get = State (\s -> (s,s))
+
+-- The type () pronounced 'unit' is roughly the same as void in C. It is
+-- defined as:
+
+-- data () = ()
+
+-- At this point we need to prove the four state laws.
