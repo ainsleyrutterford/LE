@@ -1051,3 +1051,97 @@ instance MonadState s (State s) where
 -- data () = ()
 
 -- At this point we need to prove the four state laws.
+
+-- How might we model something like:
+
+-- x := x + 1
+
+-- We will use a function called modify:
+
+modify :: (s -> s) -> State s ()
+modify f = get >>= (\s -> put (f s))
+
+-- The code x := x + 1 is roughly:
+
+-- modify (+1)
+
+-- How does this relate to IO (input/output) in Haskell? For example why do
+-- we have:
+
+-- main :: IO ()
+
+-- IO is a monad that interacts with the real world. In this case you can
+-- of it as a state monad where the s is in fact the state of the entire world.
+
+----------------
+-- LECTURE 17 --
+----------------
+
+-- FREE MONADS
+
+-- Given any functor f, we can construct the free monad for f. This represents
+-- syntax trees whose nodes are shaped by f.
+
+-- The constructors for f correspond to the different nodes that can be
+-- created. The parametric arguments to the constructors correspond to
+-- children from that node.
+
+-- For example consider the following functor, Nondet:
+
+data Nondet k = Stop | Or k k
+
+-- The Free f a type is defined as:
+
+data Free f a = Var a
+              | Con (f (Free f a))
+
+-- The variables are constructed by 'Var v' where
+-- v :: a
+
+-- The operations are given by 'Con op' where
+-- op :: f (Free f a)
+
+-- The free monad is a monad! So let's show that by first establishing that
+-- it is a functor.
+
+instance Functor f => Functor (Free f) where
+  -- fmap :: (a -> b) -> Free f a -> Free f b
+  fmap f (Var a) = Var (f a)
+  fmap f (Con op) = Con (fmap (fmap f) op)
+
+-- This works by transforming leaves by the function f, and when a node is
+-- encountered, we recursively enter the node and map.
+
+-- For the monad instance, we have the following:
+
+instance Functor f => Monad (Free f) where
+  -- return :: a -> Free f a
+  return v = Var v
+  -- (>>=) :: Free f a -> (a -> Free f b) -> Free f b
+  Var v >>= f = f v
+  Con op >>= f = Con (fmap (>>= f) op)
+
+-- Included so the notes will compile.
+instance Functor f => Applicative (Free f) where
+  pure x = undefined
+  -- (<*>) :: Free f (a -> b) -> Free f a -> Free f b
+  x <*> y = undefined
+-- Lecture notes continue.
+
+-- Interpreting these trees is achieved by a cata. It's worth comparing the
+-- types Free f a and Fix f.
+
+-- data Free f a = Var a | Con (f (Free f a))
+-- data Fix f    =          In (f (Fix f))
+
+-- We will define a function that evaluates Free f a structures.
+
+eval' :: Functor f => (f a -> a) -> Free f a -> a
+eval' alg (Var v) = v
+eval' alg (Con op) = alg (fmap (eval' alg) op)
+
+-- The eval functino is used to define a more general effect handler
+-- called handle:
+
+handle :: Functor f => (a -> b) -> (f b -> b) -> Free f a -> b
+handle gen alg = eval' alg . fmap gen
