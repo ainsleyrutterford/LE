@@ -134,31 +134,24 @@ instance Functor Tree where
 
 -- 3.
 intToDoubleTree :: Int -> Tree Int
-intToDoubleTree x = Leaf (2 * x)
+intToDoubleTree x = return (2 * x)
 
 -- 4.
 addToTree :: Int -> Int -> Tree Int
-addToTree x y = Leaf (x + y)
+addToTree x y = return (x + y)
 
 -- 5.
 manipTree :: Tree Int -> Tree Int
-manipTree t = t >>= f where
-  f x = Leaf (((x + 3) * 2) + 2)
--- manipTree t = t >>= (addToTree 3) >>= intToDoubleTree >>= (addToTree 2)
+manipTree t = t >>= (addToTree 3) >>= intToDoubleTree >>= (addToTree 2)
 
 -- 6.
 dupToTree :: a -> Tree a
-dupToTree a = Fork (Leaf a) (Leaf a)
+dupToTree a = Fork (return a) (return a)
 
 -- 7.
 duplicateTree :: Tree Int -> Tree Int
--- duplicateTree t = t >>= dupToTree
-duplicateTree t = t >>= f where
-  f x = Fork (Leaf x) (Leaf x)
+duplicateTree t = t >>= dupToTree
 
 -- 8.
 aWholeNewTree :: Tree Int -> Tree Int
--- aWholeNewTree t = t >>= dupToTree >>= intToDoubleTree
-aWholeNewTree = duplicateTree . f where
-  f (Leaf x) = Leaf (2 * x)
-  f (Fork l r) = Fork (f l) (f r)
+aWholeNewTree t = t >>= dupToTree >>= intToDoubleTree
