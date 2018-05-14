@@ -1145,3 +1145,7 @@ eval' alg (Con op) = alg (fmap (eval' alg) op)
 
 handle :: Functor f => (a -> b) -> (f b -> b) -> Free f a -> b
 handle gen alg = eval' alg . fmap gen
+
+----------------
+-- LECTURE 18 --
+----------------
